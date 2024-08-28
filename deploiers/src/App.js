@@ -1,11 +1,18 @@
 import React from 'react';
-import Dashboard from './Dashboard'; // Dashboard 컴포넌트 import
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Dashboard from './Dashboard';
+import SignUp from './SignUp';
 
 function App() {
   return (
-    <div className="App">
-      <Dashboard />  // Dashboard 컴포넌트를 렌더링
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
