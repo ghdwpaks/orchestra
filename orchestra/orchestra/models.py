@@ -5,11 +5,13 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.hashers import make_password
+from .musicbooks.obsessive import is_hashed
 
 # Create your models here.
 class User(AbstractBaseUser) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    password = models.CharField(_('password'), max_length=128)
+    #password = models.CharField(_('password'), max_length=128)
+    password = models.CharField(max_length=128)
     nickname = models.CharField(max_length=50,default="사용자",blank=True)
     email = models.CharField(max_length=50,default="def@def",blank=True, unique=True)
     credate = models.DateTimeField(auto_now_add=True, verbose_name="등록시각")
@@ -31,13 +33,7 @@ class User(AbstractBaseUser) :
     @classmethod
     def get_api_modifiable_fields(cls):
         return cls.api_modifiable_fields
-    
-@receiver(post_save, sender=User)
-def password_hashing(instance, **kwargs) :
-    if not instance.password or not instance.password.startswith('pbkdf2_sha256$'):
-        instance.password = make_password(instance.password)
-        instance.save()
-    return True
+
 
 
 class Vid(models.Model) :

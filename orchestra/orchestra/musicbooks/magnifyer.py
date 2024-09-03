@@ -12,7 +12,7 @@ class ClefViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'])
     def dashboard(self, request, *args, **kwargs):
         #user = self.request.user
-        
+        print("dashboard entered")
         result = {}
         vid = Vid.objects.all()
         if vid.exists() :

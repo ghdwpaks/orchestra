@@ -19,8 +19,6 @@ def clean_input(key,value):
     if "email" in key :
         value = validate_email(value).email
         pattern = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-        print("value :",value)
-        print("type(value) :",type(value))
         if not pattern.match(value):
             raise EmailNotValidError
         
@@ -67,7 +65,7 @@ def get_input(model,items,obj) :
     modifiable_fields = model.get_api_modifiable_fields()
     for key, value in items:
         
-        if not key in modifiable_fields : 
+        if key in modifiable_fields : 
             if key in non_string_fields :
                 field_type = type(non_string_fields_data[non_string_fields.index(key)]).__name__
                 if field_type == 'BooleanField': 
@@ -76,7 +74,26 @@ def get_input(model,items,obj) :
                     setattr(obj, key, int(value))
                 elif field_type == 'DateField':
                     setattr(obj, key, parser.parse(value))
-
-        if key in modifiable_fields :
-            setattr(obj, key, clean_input(key,value))
+            else : 
+                setattr(obj, key, clean_input(key,value))
+        else :
+            if key == 'password':  # 비밀번호는 해싱하여 저장
+                obj.set_password(value)
     return obj
+
+
+def is_hashed(text):
+    # 정규 표현식을 사용하여 다양한 해시 형식을 확인
+    patterns = {
+        'MD5': r'^[a-f0-9]{32}$',
+        'SHA1': r'^[a-f0-9]{40}$',
+        'SHA256': r'^[a-f0-9]{64}$',
+        'Argon2': r'^\$argon2[a-z0-9]{1,}\$v=\d+\$m=\d+,t=\d+,p=\d+\$[a-zA-Z0-9+/=]+\$[a-zA-Z0-9+/=]+$'  # Argon2 해시 패턴
+    }
+    
+    # 각 패턴에 대해 입력된 문자열이 일치하는지 확인
+    for hash_type, pattern in patterns.items():
+        if re.match(pattern, text):
+            return True
+    
+    return False

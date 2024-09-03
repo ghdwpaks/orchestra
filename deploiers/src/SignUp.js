@@ -19,11 +19,17 @@ function SignUp() {
         e.preventDefault();
         try {
             const response = await axios.post('http://127.0.0.1:8000/listener/signUp/', formData);
-            console.log(response.data);
-            // Handle response here (e.g., user redirection, clear form, display success message, etc.)
+            // 회원가입 성공 메시지를 alert로 표시
+            alert(`Signup successful: ${response.data.message}`);
+            // 회원가입 성공 후 홈페이지로 리디렉션
+            window.location.href = '/';
         } catch (error) {
-            console.error('Signup error:', error.response);
-            // Handle errors here (e.g., display error messages)
+            // 에러 메시지를 alert로 표시
+            if (error.response) {
+                alert(`Signup failed: ${error.response.data.detail || 'Unknown error'}`);
+            } else {
+                alert('Signup failed: Network error or server not responding');
+            }
         }
     };
 
