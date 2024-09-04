@@ -31,10 +31,45 @@ SECRET_KEY = 'django-insecure-7^5l#$$5(0+qsz(wwv$ko8=^qk!-l=9o8nm^zabhic-ytp)nny
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ORIGIN_ALLOW_ALL = False  
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # React 앱의 정확한 URL
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost:3000',
+    'https://127.0.0.1:3000',
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+]
+
 ALLOWED_HOSTS = [
     'localhost',  # React 앱이 실행 중인 주소
     '127.0.0.1',
     ]
+
+
+'''
+CSRF_TRUSTED_ORIGINS = (
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+)
+
+'''
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost:3000',
+    'https://127.0.0.1:3000',
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+)
+
 
 
 # Application definition
@@ -48,6 +83,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'orchestra',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
 ]
 
@@ -70,6 +106,25 @@ CORS_ALLOW_METHODS = [
 CORS_ALLOW_HEADERS = [
     'Authorization',
     'Content-Type',
+    
+    'access-control-allow-credentials',
+    'access-control-allow-origin',
+    'access-control-request-method',
+    'access-control-request-headers',
+    'accept',
+    'accept-encoding',
+    'accept-language',
+    'authorization',
+    'connection',
+    'content-type',
+    'dnt',
+    'credentials',
+    'host',
+    'origin',
+    'user-agent',
+    'X-CSRFToken',
+    'csrftoken',
+    'x-requested-with',
 ]
 
 

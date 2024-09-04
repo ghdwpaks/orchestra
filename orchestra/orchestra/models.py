@@ -6,6 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.hashers import make_password
 from .musicbooks.obsessive import is_hashed
+import os
+import binascii
 
 # Create your models here.
 class User(AbstractBaseUser) :
@@ -34,6 +36,21 @@ class User(AbstractBaseUser) :
     def get_api_modifiable_fields(cls):
         return cls.api_modifiable_fields
 
+class UserToken(models.Model):
+    key = models.CharField(max_length=128, null=True, blank=True, unique=True)
+    user = models.ForeignKey(User, related_name='userTokens',on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True, verbose_name="등록시각")
+    useable = models.BooleanField(default=True,blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key : 
+            self.key = binascii.hexlify(os.urandom(64)).decode()
+        return super().save(*args, **kwargs)
+    
+    def __str__(self) : return self.key
+
+    @property
+    def is_authenticated(self): return True
 
 
 class Vid(models.Model) :

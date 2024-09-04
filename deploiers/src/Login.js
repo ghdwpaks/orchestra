@@ -21,13 +21,10 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log("enterd event");
             const response = await axios.post('http://127.0.0.1:8000/listener/login/', formData);
-            console.log("Login successful:", response.data);
-            setCsrfToken(response.data.csrfToken); // 서버로부터 받은 CSRF 토큰 저장
-            console.log("response.data.csrfToken :",response.data.csrfToken)
-            sessionStorage.setItem('csrfToken', response.data.csrfToken); // 세션 스토리지에 CSRF 토큰 저장
-            navigate('/'); // 로그인 성공 시 홈 페이지로 리디렉션
+            console.log("response :",response)
+            localStorage.setItem('token', response.data.token);
+            navigate('/');  // 로그인 성공 시 홈 페이지로 리디렉션
         } catch (error) {
             console.error('Login error:', error.response);
             setErrorMessage('Login failed: ' + (error.response?.data?.detail || 'Unexpected error')); // 오류 메시지 설정

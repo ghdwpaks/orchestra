@@ -22,10 +22,27 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem('csrfToken');
-    setCsrfToken(token);
-    console.log("csrfToken :", csrfToken);
-    if (csrfToken) {
+    
+    const token = localStorage.getItem('token');
+    console.log("token :", token);
+    axios.get('http://127.0.0.1:8000/magnifyer/dashboard/',
+      {
+        headers: { Authorization: 'Token ' + token }
+      }
+    ).then(response => {
+      console.log("ghdwpaks")
+      console.log("response :",response)
+      // res 배열의 첫 번째 객체에서 name 값을 추출하여 저장
+      if (response.data.res && response.data.res.length > 0) {
+        setData(response.data.res[0].name);
+      } else {
+        setData('No data available');
+      }
+    });
+
+
+    if (token) {
+
       axios.get('http://127.0.0.1:8000/magnifyer/dashboard/')
         .then(response => {
           // res 배열의 첫 번째 객체에서 name 값을 추출하여 저장

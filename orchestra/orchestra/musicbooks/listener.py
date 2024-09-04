@@ -9,6 +9,27 @@ from django.middleware.csrf import get_token
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework import viewsets, filters, status, permissions, authentication, exceptions
+from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
+
+
+class Authentication(TokenAuthentication):
+    def authenticate_credentials(self, key):
+        token = None
+        try:
+            token = UserToken.objects.select_related("user").get(key=key)
+        except UserToken.DoesNotExist:
+            raise exceptions.AuthenticationFailed('Invalid token.')
+        if not token.useable : 
+            raise exceptions.AuthenticationFailed('User Unuseabled.')
+        elif token.user.is_active:
+            raise exceptions.AuthenticationFailed('User Unactivated.')
+        elif token.user.is_deleted: 
+            raise exceptions.AuthenticationFailed('User deleted.')
+        return (token.user, token)
+    
 
 class ListenerViewSet(viewsets.ModelViewSet):
     
@@ -35,18 +56,7 @@ class ListenerViewSet(viewsets.ModelViewSet):
         try:
             user = User.objects.get(email=request.data.get("email"))
             if user.check_password(request.data.get("password")):
-                response = Response({"message": "Login successful"})
-                csrf_token = get_token(request)
-                response_data = {"message": "Login successful", "csrfToken": csrf_token}
-                return Response(response_data)
-                #response.set_cookie(
-                #    "csrftoken", 
-                #    csrf_token, 
-                #    httponly=True,
-                #    secure=True,  
-                #    samesite='Lax'
-                #)
-                #return response
+                return Response({'token': UserToken.objects.get_or_create(user=user)[0].key})
             else:
                 raise AuthenticationFailed("Invalid User")
         except User.DoesNotExist:
@@ -63,4 +73,3 @@ class ListenerViewSet(viewsets.ModelViewSet):
             return Response({'result': True}, 200)
 
         
-
