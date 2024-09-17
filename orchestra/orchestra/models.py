@@ -68,7 +68,7 @@ class Vid(models.Model) :
 class High(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     vid = models.ForeignKey(Vid, on_delete=models.CASCADE, related_name='highlights')
-    url = models.CharField(max_length=100,blank=True)
+    timestamp = models.IntegerField(default=None, verbose_name="timestamp")
     
     def __str__(self):
         return f"{self.vid_id}:{self.id}"
@@ -80,8 +80,8 @@ class High(models.Model) :
 class Tag(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
-    vid = models.ForeignKey(Vid, on_delete=models.CASCADE, related_name='tags')
-    high = models.ForeignKey(High, on_delete=models.CASCADE, related_name='tags')
+    vid = models.ForeignKey(Vid, null=True, default=None, blank=True, on_delete=models.CASCADE, related_name='tags')
+    high = models.ForeignKey(High, null=True, default=None, blank=True, on_delete=models.CASCADE, related_name='tags')
     
     def __str__(self):
         return f"{self.id}"

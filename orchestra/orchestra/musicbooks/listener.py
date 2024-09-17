@@ -1,18 +1,24 @@
-from rest_framework import viewsets
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from orchestra.models import *
-from orchestra.serializers import *
-from .obsessive import get_input
-from django.contrib.auth.hashers import check_password
-from django.middleware.csrf import get_token
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework import viewsets, filters, status, permissions, authentication, exceptions
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
+from orchestra.models import *
+from orchestra.serializers import *
+
+from django.contrib.auth.hashers import check_password
+from django.middleware.csrf import get_token
+from .obsessive import get_input
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+import random
+import string
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 
 class Authentication(TokenAuthentication):
@@ -48,8 +54,6 @@ class ListenerViewSet(viewsets.ModelViewSet):
         obj.save()
         return Response({'result': UserDefSer(obj,many=False).data}, 200)
 
-
-        
     @action(detail=False, methods=['POST'])
     def login(self, request, *args, **kwargs):
         print("entered")
@@ -62,9 +66,6 @@ class ListenerViewSet(viewsets.ModelViewSet):
         except User.DoesNotExist:
             raise AuthenticationFailed("Invalid User")
 
-    
-
-    
     @action(detail=False, methods=['POST'])
     def checkEmail(self, request, *args, **kwargs):
         if request.data.get("email") in User.objects.all().values_list("email",flat=True) :
@@ -73,3 +74,59 @@ class ListenerViewSet(viewsets.ModelViewSet):
             return Response({'result': True}, 200)
 
         
+    @action(detail=False, methods=['POST'])
+    def sendEmailVerificationCode(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        try : 
+            User.objects.get(email=email)
+        except User.DoesNotExist :
+            return None
+        
+        random_string = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
+
+        message = Mail(
+            from_email="hjm7904@gmail.com",
+            to_emails=email,
+            subject='String to be used for password change',
+            html_content=f"""Your code is Here.
+<strong>{random_string}</strong>"""
+        )
+        try:
+            sg = SendGridAPIClient('your_sendgrid_api_key')
+            response = sg.send(message)
+            print(response.status_code, response.body, response.headers)
+        except Exception as e:
+            print(e.message)
+    
+
+
+    @action(detail=False, methods=['POST'])
+    def send_email(self, request, *args, **kwargs):
+        random_string = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
+        from_email = "hjm7904+1@gmail.com"
+        to_emails = ["hjm7904@gmail.com"]  # 여기를 리스트로 변경
+        subject = 'Test Subject'
+        html_content = random_string
+
+        client = boto3.client(
+            'ses',
+            region_name='ap-northeast-3',  # 적절한 AWS 리전으로 설정
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+        )
+        try:
+            response = client.send_email(
+                Source=from_email,
+                Destination={'ToAddresses': to_emails},  # 리스트로 감싸줌
+                Message={
+                    'Subject': {'Data': subject},
+                    'Body': {'Html': {'Data': html_content}}
+                }
+            )
+            print("Email sent! Message ID:", response['MessageId'])
+            return Response({'result': True}, 200)
+        except NoCredentialsError:
+            print("Credentials not available")
+            return Response({'result': False}, 200)
+
+

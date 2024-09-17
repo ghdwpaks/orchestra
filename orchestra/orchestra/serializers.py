@@ -17,9 +17,12 @@ class UserDetailSer(serializers.ModelSerializer) :
 #
 
 class VidDefSer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='api:user-list', source='username',
+                                                lookup_url_kwarg='username', lookup_field='username')
+
     class Meta:
         model = Vid
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'url')
 
 class VidDetailSer(serializers.ModelSerializer):
     class Meta:
@@ -31,37 +34,38 @@ class VidDetailSer(serializers.ModelSerializer):
 class HighDefSer(serializers.ModelSerializer):
     class Meta:
         model = High
-        fields = ('id', 'name')
+        fields = ('id', 'timestamp')
 
 class HighDetailSer(serializers.ModelSerializer):
     class Meta:
         model = High
-        fields = ('id', 'url')
+        fields = ('id', 'timestamp')
 
 #
-class TagFunc() :
-    def get_name(self, obj):
-        tagNames =TagName.objects.filter(
-                Q(vid_id=obj.id)
-                &Q(lang=self.context.get("lang",None))
-            )
-        if tagNames.exists() :
-            return tagNames.first().name
-        else : return ""
-
+class TagFunc():
+    def get_name(obj, context):
+        l = context[0].get("l", 1)
+        tagNames = TagName.objects.filter(
+            Q(tag_id=obj.id) & Q(lang=l)
+        )
+        return tagNames.first().name if tagNames.exists() else ""
+    
+    def get_url(obj):return obj.url
 
 class TagDefSer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
-    def get_name(self, obj):TagFunc.get_name(self, obj)
+    def get_name(self, obj):
+        return TagFunc.get_name(obj, self.context)  # context 전달
 
     class Meta:
         model = Tag
-        fields = ('id', 'name')
+        fields = ('name',)
+
 
 class TagDetailSer(serializers.ModelSerializer):
-
     name = serializers.SerializerMethodField()
-    def get_name(self, obj):TagFunc.get_name(self, obj)
+    def get_name(self, obj):
+        return TagFunc.get_name(obj, self.context)  # context 전달
 
     class Meta:
         model = Tag

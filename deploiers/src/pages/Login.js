@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // React Router에서 useNavigate 훅을 임포트
 
+
 function Login() {
     const [formData, setFormData] = useState({
         email: '',
