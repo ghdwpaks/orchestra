@@ -9,10 +9,13 @@ from .musicbooks.obsessive import is_hashed
 import os
 import binascii
 
+from django.utils import timezone
+from datetime import timedelta
+
 # Create your models here.
 class User(AbstractBaseUser) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    #password = models.CharField(_('password'), max_length=128)
+    uid = models.CharField(max_length=50,default=None)
     password = models.CharField(max_length=128)
     nickname = models.CharField(max_length=50,default="사용자",blank=True)
     email = models.CharField(max_length=50,default="def@def",blank=True, unique=True)
@@ -135,6 +138,17 @@ class Comment(models.Model) :
         verbose_name = "comment"
         verbose_name_plural = "comment"
 
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    confirmable = models.BooleanField(default=True) #검사할때 사용할 수 있는지
+    useable = models.BooleanField(default=True) #패스워드를 변경할때 사용할 수 있는지
+    created_at = models.DateTimeField(auto_now_add=True)
+    '''
+    @classmethod
+    def delete_expired_codes(cls):
+        cls.objects.filter(created_at__lt=timezone.now()-timedelta(minutes=3)).delete()
+    '''
 
 class Log(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')

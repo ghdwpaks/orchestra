@@ -63,8 +63,8 @@ def get_input(model,items,obj) :
 
 
     modifiable_fields = model.get_api_modifiable_fields()
+
     for key, value in items:
-        
         if key in modifiable_fields : 
             if key in non_string_fields :
                 field_type = type(non_string_fields_data[non_string_fields.index(key)]).__name__

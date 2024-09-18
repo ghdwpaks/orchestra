@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'; // React Router에서 useNavigat
 
 function Login() {
     const [formData, setFormData] = useState({
-        email: '',
+        uid: '',
         password: ''
     });
     const [errorMessage, setErrorMessage] = useState(''); // 로그인 실패 메시지를 저장할 상태
@@ -32,16 +32,24 @@ function Login() {
         }
     };
 
+    const handleEmailCheck = () => {
+        navigate('/emailinput');  // '/emailcheck'로 이동
+    };
+    
+    const handleSignUp = () => {
+        navigate('/signup');
+    };
+
     return (
         <form onSubmit={handleSubmit}>
             <h2>Login</h2>
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* 오류 메시지 표시 */}
             <div>
-                <label>Email</label>
+                <label>id</label>
                 <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
+                    type="uid"
+                    name="uid"
+                    value={formData.uid}
                     onChange={handleChange}
                     required
                 />
@@ -57,6 +65,14 @@ function Login() {
                 />
             </div>
             <button type="submit">Login</button>
+            <hr/>
+            <button type="button" onClick={handleEmailCheck}>
+                ChangePassword
+            </button>
+            <hr/>
+            <button type="button" onClick={handleSignUp}>
+                SignUp
+            </button>
         </form>
     );
 }

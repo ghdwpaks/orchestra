@@ -58,7 +58,8 @@ class ListenerViewSet(viewsets.ModelViewSet):
     def login(self, request, *args, **kwargs):
         print("entered")
         try:
-            user = User.objects.get(email=request.data.get("email"))
+            user = User.objects.get(uid=request.data.get("uid"))
+            print('user :',user)
             if user.check_password(request.data.get("password")):
                 return Response({'token': UserToken.objects.get_or_create(user=user)[0].key})
             else:
@@ -102,12 +103,25 @@ class ListenerViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def send_email(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        user = None
+        try : 
+            user = User.objects.get(email=email)
+        except User.DoesNotExist :
+            return Response({'result': False}, 200)
+
+
         random_string = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
+        PasswordResetCode.objects.create(
+            user = user,
+            code = random_string
+        )
+
+
         from_email = "hjm7904+1@gmail.com"
-        to_emails = ["hjm7904@gmail.com"]  # 여기를 리스트로 변경
+        to_emails = [email]
         subject = 'Test Subject'
         html_content = random_string
-
         client = boto3.client(
             'ses',
             region_name='ap-northeast-3',  # 적절한 AWS 리전으로 설정
@@ -123,10 +137,57 @@ class ListenerViewSet(viewsets.ModelViewSet):
                     'Body': {'Html': {'Data': html_content}}
                 }
             )
-            print("Email sent! Message ID:", response['MessageId'])
             return Response({'result': True}, 200)
         except NoCredentialsError:
-            print("Credentials not available")
+            return Response({'result': False}, 500)
+
+    @action(detail=False, methods=['POST'])
+    def confirm_email(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        code = request.data.get("code")
+        try : 
+            passwordResetCode = PasswordResetCode.objects.get(
+                    user=User.objects.get(email=email),
+                    email=email,
+                    code=code,
+                    confirmable=True
+                )
+            passwordResetCode.confirmable = False
+            passwordResetCode.save()
+            return Response({'result': True}, 200)
+        except User.DoesNotExist :
             return Response({'result': False}, 200)
+
+    @action(detail=False, methods=['POST'])
+    def change_password(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        code = request.data.get("code")
+        try : 
+            user = User.objects.get(email=email)
+            passwordResetCode = PasswordResetCode.objects.get(
+                    user=user,
+                    code=code,
+                    confirmable=False,
+                    useable=True
+                )
+            passwordResetCode.useable = False
+            passwordResetCode.save()
+            print("ghdwpaks")
+            obj = get_input(
+                    User,
+                    request.data.items(),
+                    user
+                )
+            
+            obj.save()
+
+
+            return Response({'result': True}, 200)
+        except User.DoesNotExist :
+            return Response({'result': False}, 200)
+        
+        
+
+
 
 
