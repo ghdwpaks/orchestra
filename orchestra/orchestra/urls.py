@@ -2,7 +2,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path,re_path, include
 from rest_framework import routers
-from .musicbooks import magnifyer, listener
+from .musicbooks import magnifyer, listener, video, high, tag
 
 class MenuitApiView(routers.APIRootView):pass
 
@@ -10,8 +10,12 @@ class DocumentedRouter(routers.DefaultRouter):
     APIRootView = MenuitApiView
 
 router = DocumentedRouter()
-router.register(r'magnifyer', magnifyer.ClefViewSet)
-router.register(r'listener', listener.ListenerViewSet)
+router.register(r'magnifyer', magnifyer.ClefViewSet, basename="magnifyer")
+router.register(r'listener', listener.ListenerViewSet, basename="listener")
+router.register(r'vid', video.VidViewSet, basename="vid")
+router.register(r'high', high.HighViewSet, basename="high")
+router.register(r'tag', tag.TagViewSet, basename="tag")
+
 
 urlpatterns = [
     re_path(r'^', include(router.urls)),

@@ -190,3 +190,100 @@ def extract_video_id(youtube_url):
     
     # URL이 비디오 ID를 포함하지 않는 경우
     return None
+
+
+
+def extract_timestamp(youtube_url):
+    # URL 파싱
+    parsed_url = urlparse(youtube_url)
+    
+    # 쿼리 파라미터 추출 (일반 URL일 경우)
+    query_params = parse_qs(parsed_url.query)
+
+    # 단축 URL일 경우, 쿼리 파라미터는 없고 fragment에 있을 수 있음
+    if not query_params and parsed_url.fragment:
+        query_params = parse_qs(parsed_url.fragment)
+    
+    # 타임스탬프가 't' 파라미터에 존재하는지 확인
+    if 't' in query_params:
+        time_str = query_params['t'][0]  # 첫 번째 값을 가져옴
+        return convert_time_to_seconds(time_str)
+    
+    return 0  # 타임스탬프가 없을 경우 0초로 반환
+
+def convert_time_to_seconds(time_str):
+    """
+    t 파라미터는 다음과 같은 형식일 수 있음:
+    - '45' (초)
+    - '3m30s' (분 + 초)
+    - '1h2m30s' (시 + 분 + 초)
+    """
+    total_seconds = 0
+    current_value = ''
+    
+    for char in time_str:
+        if char.isdigit():
+            current_value += char
+        else:
+            if char == 'h':
+                total_seconds += int(current_value) * 3600
+            elif char == 'm':
+                total_seconds += int(current_value) * 60
+            elif char == 's':
+                total_seconds += int(current_value)
+            current_value = ''
+    
+    # 마지막에 남아있는 숫자가 초일 경우 처리
+    if current_value:
+        total_seconds += int(current_value)
+    
+    return total_seconds
+
+
+
+
+
+def is_valid_youtube_url(url):
+    if isinstance(url, str) :
+        """
+        입력된 URL이 YouTube URL인지 판별하는 함수
+        """
+        # YouTube URL 패턴
+        youtube_regex = (
+            r'(https?://)?(www\.)?'
+            '(youtube|youtu|youtube-nocookie)\.(com|be)/'
+            '(watch\?v=|embed/|v/|.+\?v=|shorts/|watch\?v=)?([^&=%\?]{11})')
+        
+        # 정규 표현식으로 URL 매칭
+        match = re.match(youtube_regex, url)
+        
+        # 매칭이 되는지 확인
+        return bool(match)
+    else : 
+        return False
+
+
+def convertTimeToSeconds(timeStr):
+    if str(timeStr).isdigit() : 
+        return int(timeStr)
+    # 정규 표현식을 사용하여 시간 형식을 추출 (시, 분, 초를 나타내는 부분을 처리)
+    timePattern = r'(?P<value>\d+)(?P<unit>[hms시분초]?)'
+
+    # 정규식으로 시, 분, 초를 파싱
+    matches = re.findall(timePattern, timeStr)
+
+    totalSeconds = 0
+    
+    for value, unit in matches:
+        value = int(str(value).strip())
+        
+        # 단위에 따른 계산 (영어와 한글 둘 다 처리)
+        if unit in ['h', '시']:
+            totalSeconds += value * 3600
+        elif unit in ['m', '분']:
+            totalSeconds += value * 60
+        elif unit in ['s', '초'] or unit == '':
+            totalSeconds += value
+    
+    return totalSeconds
+

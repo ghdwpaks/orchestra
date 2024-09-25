@@ -35,7 +35,7 @@ function Dashboard() {
       console.log("token :",token)
       axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
           params: params,
-          headers: { Authorization: token }
+          headers: { Authorization: `Token ${token}` }
         })
         .then(response => {
           setHasToken(true);
@@ -61,7 +61,7 @@ function Dashboard() {
 
     axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
       params: params,
-      headers: { Authorization: token }
+      headers: { Authorization: `Token ${token}` }
     })
     .then(response => {
       console.log("Video details:", response.data);

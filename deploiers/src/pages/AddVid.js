@@ -15,7 +15,7 @@ const YoutubeUrlForm = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/magnifyer/add_vid/', {
+      const response = await axios.post('http://127.0.0.1:8000/vid/add_vid/', {
         url: youtubeUrl  // vid 키로 유튜브 URL을 전송
       });
       console.log('서버 응답:', response.data);

@@ -10,6 +10,7 @@ function DetailVidDashboard({ videoId }) {
   const [tagInput, setTagInput] = useState('');
   const [highlightInput, setHighlightInput] = useState('');
   let { id } = useParams();
+  let { timestamp } = useParams();
   console.log("videoData :", JSON.stringify(videoData, null, 2));
   const navigate = useNavigate();
 
@@ -20,12 +21,17 @@ function DetailVidDashboard({ videoId }) {
     const params = { l: 1, vid_id: id };
     axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
       params,
-      headers: { Authorization: token }
+      headers: { Authorization: `Token ${token}` }
     })
     .then(response => setVideoData(response.data.result))
     .catch(error => console.error('Error fetching video details', error));
 
-    
+    axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
+      params,
+      headers: { Authorization: `Token ${token}` }
+    })
+    .then(response => setVideoData(response.data.result))
+    .catch(error => console.error('Error fetching video details', error));
 
 
   }, [videoId]);
@@ -41,7 +47,15 @@ function DetailVidDashboard({ videoId }) {
   };
 
   const handleHighlightSubmit = () => {
-    console.log('Submitting highlight:', highlightInput);
+    const token = localStorage.getItem('token');
+    const params = { timestamp: highlightInput, vid_id: id };
+    axios.post('http://127.0.0.1:8000/high/add_high/', 
+      params,  // 이 부분은 데이터 본문으로 전달
+      {
+        headers: { Authorization: `Token ${token}` }
+      }
+    );
+
     // Submit highlight logic here
     setHighlightInput('');
   };
@@ -51,10 +65,6 @@ function DetailVidDashboard({ videoId }) {
   return (
     
   <div style={{ position: 'relative', width: '80%'}}>
-    {/* <YouTube videoId={videoData.vid.url} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
-    {/* <YouTube videoId={videoData.high.url} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
-    {/* <YouTube videoId={videoData.vid.url} containerClassName="youtube-container" style={{ width: '40%', height: 'auto' }} /> */}
-
 
   <body>
     
@@ -117,6 +127,10 @@ function DetailVidDashboard({ videoId }) {
                   </td>
                 </tr>
               ))}
+
+              <tr>
+              <td></td>
+              </tr>
               
           </tbody>
       </table>
