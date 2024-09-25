@@ -20,7 +20,6 @@ class HighViewSet(viewsets.ModelViewSet):
         timestamp = request.data.get("timestamp")
         # Vid 모델의 url 필드에 이미 존재하는 URL들을 저장할 리스트
         vid_id = request.data.get("vid_id")
-        print("timestamp :",timestamp)
 
         if is_valid_youtube_url(timestamp) :
             timestamp = extract_timestamp(timestamp) #int
@@ -124,12 +123,3 @@ def extract_video_info(youtube_url):
     return video_id, timestamp
 
 
-# 사용 예시
-youtube_url = "https://youtu.be/0TCwx602Vlk?t=1h2m3s"
-video_id, timestamp = extract_video_info(youtube_url)
-
-if video_id is not None:
-    print(f"Video ID: {video_id}")
-    print(f"Timestamp: {timestamp} seconds")
-else:
-    print("Invalid YouTube URL")

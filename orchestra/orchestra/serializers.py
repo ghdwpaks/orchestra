@@ -54,8 +54,6 @@ class HighDetailSer(serializers.ModelSerializer):
 #
 class TagFunc():
     def get_name(obj, context):
-        print("context :",context)
-        print("type(context) :",type(context))
         l = None
         try :
             l = context[0].get("l", 1)

@@ -1,150 +1,290 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef} from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import YouTube from 'react-youtube';
 import './MyTableStyles.css';  // 기존의 스타일 파일
 
 function Dashboard() {
-  const [data, setData] = useState('Loading...');
-  const [csrfToken, setCsrfToken] = useState('');
+  const token = localStorage.getItem('token');
+  const savedState = JSON.parse(localStorage.getItem('dashboardState'));
+  
+  // data를 useState로 변경
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);  // 페이지 이동 여부를 추적하는 상태
   const [hasToken, setHasToken] = useState(false); // 토큰 유무를 추적하는 상태 추가
+  const [data, setData] = useState(savedState?.data || 'Loading...');
+  const [word, setWord] = useState(savedState?.word || '');
+  const [field, setField] = useState(savedState?.field || 'tag');
+  
+  const l = useRef(savedState?.l || 1);
+  const size = useRef(savedState?.size || 10);
+  const loc = useRef(savedState?.loc || 1);
+  const loc_limit = useRef(savedState?.loc_limit || 1);
+
 
   const handleLogin = () => {
+    setIsNavigating(true);
     navigate('/login');
   };
 
   const handleSignUp = () => {
+    setIsNavigating(true);
     navigate('/signup');
   };
 
   const handleUserPage = () => {
+    setIsNavigating(true);
     navigate('/user');
   };
   
   const handleAddVid = () => {
+    setIsNavigating(true);
     navigate('/addvid');
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      var params = {
-        l:0 
-      };
-      console.log("token :",token)
-      axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
-          params: params,
-          headers: { Authorization: `Token ${token}` }
-        })
-        .then(response => {
-          setHasToken(true);
-          if (response.data.result.length > 0) {
-            console.log("data :",data)
-            setData(response.data.result);
-          } else {
-            setData('No data available');
-          }
-        });
-
-    } else {
-      setHasToken(false);
-      setData('Please login or sign up.');
-    }
-  }, [csrfToken]);
-
-  const fetchVideoDetail = (videoId) => {
-    const token = localStorage.getItem('token');
-    const params = {
-      l: 1,
-      vid_id: videoId
-    };
-
-    axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
-      params: params,
-      headers: { Authorization: `Token ${token}` }
-    })
-    .then(response => {
-      console.log("Video details:", response.data);
-    })
-    .catch(error => {
-      console.error('Error fetching video details:', error);
-    });
   };
 
   const handleNavigation = (item) => {
     if (item && item.id) {
+      setIsNavigating(true);
       navigate(`/detail/${item.id}`);
     } else {
       console.error('Item or item.id is undefined');
     }
   };
 
+  const handleWord = (e) => {
+    setWord(e.target.value)
+  };
+
+  const handleField = (e) => {
+    setField(e.target.value)
+  };
+
+  const handleLoc = (e) => {
+    loc.current = e.target.value;
+    
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
+      params,  // params를 객체로 전달
+      headers: { Authorization: `Token ${token}` }
+    })
+    .then(response => {
+      console.log("handleSearch entered");
+      handlePageData(response.data);
+    });
+  };
+
+  const handlePageData = (req_data) => {
+    setHasToken(true);
+    if (req_data.result.length > 0) {
+      console.log("result.length() :", req_data.result.length);
+      // 상태 변경 (렌더링 트리거)
+      console.log("req_data :",req_data)
+      console.log("req_data.l :",req_data.l)
+      console.log("req_data.Size :",req_data.size)
+      console.log("req_data.Loc :",req_data.loc)
+
+
+      setData(req_data.result);
+      l.current = req_data.l;
+      size.current = req_data.size;
+      loc.current = req_data.loc;
+      loc_limit.current = req_data.loc_limit;
+      console.log("loc_limit :",loc_limit)
+      localStorage.setItem('dashboardState', JSON.stringify({ 
+        data,
+        word,
+        field,
+        l:l.current,
+        size:size.current,
+        loc:loc.current,
+        loc_limit:loc_limit.current,
+      }));
+    } else {
+      setData('No data available');
+    }
+  };
+
+  useEffect(() => {
+    const clearLocalStorage = (event) => {
+      // 사용자가 직접 새로고침을 할 때만 localStorage를 비움
+      if (!isNavigating) {
+        localStorage.removeItem('dashboardState');
+      }
+    };
+
+    window.addEventListener('beforeunload', clearLocalStorage);
+    
+    if (token) {
+      const savedState = JSON.parse(localStorage.getItem('dashboardState'));
+      const params = {
+        l:savedState?.l || 1,
+        size:savedState?.size || 10,
+        loc:savedState?.loc || 1,
+        loc_limit:savedState?.loc_limit || 1,
+        word:savedState?.word || '',
+        field:savedState?.field || 'tag'
+      };
+      axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
+          params: params,
+          headers: { Authorization: `Token ${token}` }
+        })
+        .then(response => {
+          handlePageData(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    } else {
+      setHasToken(false);
+      setData('Please login or sign up.');
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', clearLocalStorage);
+    };
+  }, [isNavigating, l, size, loc, token]);
+
+  const handleSearch = () => {
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
+      params,  // params를 객체로 전달
+      headers: { Authorization: `Token ${token}` }
+    })
+    .then(response => {
+      handlePageData(response.data);
+    });
+  };
+
+  const handleSizeChange = (e) => {
+    console.log("entered");
+    console.log("e.target.value :", e.target.value);
+    size.current = e.target.value;
+    
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
+      params,  // params를 객체로 전달
+      headers: { Authorization: `Token ${token}` }
+    })
+    .then(response => {
+      console.log("handleSearch entered");
+      handlePageData(response.data);
+    });
+  };
+
   return (
     <div>
-    <h1>Dashboard</h1>
-    {/* /addvid로 이동하는 버튼 추가 */}
-    {hasToken && (
-      <button onClick={handleAddVid}>Add Video</button>
-    )}
+      <h1>Dashboard</h1>
+      {hasToken && (
+        <>
+          <button onClick={handleAddVid}>Add Video</button>
 
-    {data === 'Please login or sign up.' ? (
-      <div>
-        <button onClick={handleLogin}>Login</button>
-        <button onClick={handleSignUp}>Sign Up</button>
-      </div>
-    ) : typeof data === 'string' ? (
-      <p>{data}</p>
-    ) : (
-      <div style={{ position: 'relative', width: '90%', marginLeft: '10px' }}>
-        <table className="myTable" style={{ marginLeft: '10px' }}>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={item.id || index}>
-                <td style={{ width: '20%', padding: '10px' }}>
-                  <button 
-                    onClick={() => handleNavigation(item)}
-                    style={{
-                      fontSize: '20px', // 글꼴 크기를 키워서 버튼 텍스트 확대
-                      width: '100%', // 버튼의 너비를 전체 셀 너비로 설정
-                      height: '60%', // 버튼의 높이를 직접 설정
-                    }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={word}
+                onChange={handleWord}
+                style={{ padding: '10px', marginRight: '10px' }}
+              />
+
+              <select
+                value={field}
+                onClick={handleField}
+                style={{ padding: '10px', marginRight: '10px' }}
+              >
+                <option value="tag">태그</option>
+                <option value="name">제목</option>
+              </select>
+
+              <button
+                onClick={handleSearch}
+                style={{ padding: '10px 20px', backgroundColor: 'blue', color: 'white', cursor: 'pointer' }}
+              >
+                검색
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <select
+                value={size.current}
+                onChange={handleSizeChange}
+                style={{ padding: '10px', marginRight: '10px' }}
+              >
+                <option value="5">5개</option>
+                <option value="10">10개</option>
+                <option value="30">30개</option>
+                <option value="100">100개</option>
+              </select>
+              
+              <select
+                value={loc.current}
+                onChange={handleLoc}
+                style={{ padding: '10px', marginRight: '10px' }}
+              >
+                {Array.from({ length: loc_limit.current }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1} P
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </>
+      )}
+
+      {data === 'Please login or sign up.' ? (
+        <div>
+          <button onClick={handleLogin}>Login</button>
+          <button onClick={handleSignUp}>Sign Up</button>
+        </div>
+      ) : typeof data === 'string' ? (
+        <p>{data}</p>
+      ) : (
+        <div style={{ position: 'relative', width: '90%', marginLeft: '10px' }}>
+          <table className="myTable" style={{ marginLeft: '10px' }}>
+            <tbody>
+              {data.map((item, index) => (
+                <tr key={item.id || index}>
+                  <td style={{ width: '20%', padding: '10px' }}>
+                    <button 
+                      onClick={() => handleNavigation(item)}
+                      style={{
+                        fontSize: '20px', 
+                        width: '100%', 
+                        height: '60%', 
+                      }}>
                       {item.name.length > 15 ? `${item.name.slice(0, 15)}...` : item.name}
-                  </button>
-                </td>
-                <td style={{ width: '15%', padding: '10px' }}>
-                  {item.tag && item.tag.length > 0 ? (
-                    <p>
-                      {item.tag.map((tagItem, tagIndex) => (
-                        <p key={tagIndex} className="gray-background">{tagItem.name}</p>
-                      ))}
-                    </p>
-                  ) : (
-                    <p/>
-                  )}
-                </td>
-                <td style={{ width: '65%', padding: '10px' }}>
-                  <div className="video-container">
-
-                    
-                    <iframe
-                      class="video"
-                      src={`https://www.youtube.com/embed/${item.url}`}
-                      frameborder="0"
-                      allowfullscreen
-                    />
-
-                    {/* <YouTube videoId={item.url} containerClassName="youtube-container" style={{ width: '100%', height: 'auto' }} /> */}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
-
+                    </button>
+                  </td>
+                  <td style={{ width: '15%', padding: '10px' }}>
+                    {item.tag && item.tag.length > 0 ? (
+                      <p>
+                        {item.tag.map((tagItem, tagIndex) => (
+                          <p key={tagIndex} className="gray-background">{tagItem.name}</p>
+                        ))}
+                      </p>
+                    ) : (
+                      <p/>
+                    )}
+                  </td>
+                  <td style={{ width: '65%', padding: '10px' }}>
+                    <div className="video-container">
+                      <iframe
+                        className="video"
+                        src={`https://www.youtube.com/embed/${item.url}`}
+                        frameBorder="0"
+                        allowFullScreen
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 

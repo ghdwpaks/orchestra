@@ -18,7 +18,6 @@ const YoutubeUrlForm = () => {
       const response = await axios.post('http://127.0.0.1:8000/vid/add_vid/', {
         url: youtubeUrl  // vid 키로 유튜브 URL을 전송
       });
-      console.log('서버 응답:', response.data);
       alert('URL이 성공적으로 전송되었습니다!');
       navigate('/');
     } catch (error) {

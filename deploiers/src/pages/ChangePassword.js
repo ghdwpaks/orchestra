@@ -11,8 +11,6 @@ function ChangePassword() {
     password: '',
     confirmPassword: ''
   });
-  console.log("formData.email :",formData.email)
-  console.log("formData.code :",formData.code)
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();  // 페이지 이동을 위한 훅
 

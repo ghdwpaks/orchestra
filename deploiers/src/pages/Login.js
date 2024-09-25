@@ -23,7 +23,6 @@ function Login() {
         e.preventDefault();
         try {
             const response = await axios.post('http://127.0.0.1:8000/listener/login/', formData);
-            console.log("response :",response)
             localStorage.setItem('token', response.data.token);
             navigate('/');  // 로그인 성공 시 홈 페이지로 리디렉션
         } catch (error) {

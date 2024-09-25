@@ -168,7 +168,6 @@ def get_youtube_video_titles(url_list,video_ids):
         # 동영상 정보를 저장하는 로직
         for item in video_data.get('items', []):
             if item['snippet']['channelId'] == os.getenv('YOUTUBE_CHANNEL_ID'):
-                print("item['id'] :",item['id'])
                 Vid.objects.create(
                     name=item['snippet']['title'],
                     url=item['id']

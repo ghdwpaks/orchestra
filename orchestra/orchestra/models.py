@@ -101,7 +101,7 @@ class TagName(models.Model) :
         verbose_name_plural = "tagName"
 
 class TagMapper(models.Model) :
-    tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL, related_name='tagMapper')
+    tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL, related_name='tagMappers')
     vid = models.ForeignKey(Vid, null=True, default=None, blank=True, on_delete=models.SET_NULL, related_name='tagMappers')
     high = models.ForeignKey(High, null=True, default=None, blank=True, on_delete=models.SET_NULL, related_name='tagMappers')
     

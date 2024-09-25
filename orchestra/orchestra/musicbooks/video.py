@@ -17,7 +17,6 @@ class VidViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'], authentication_classes=[Authentication])
     def add_vid(self, request, *args, **kwargs):
         update_channel_videos = request.data.get("update_channel_videos")
-        print("update_channel_videos :",update_channel_videos)
 
         if request.data.get("update_channel_videos") :
             ids = get_all_video_ids_from_channel()

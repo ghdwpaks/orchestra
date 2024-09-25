@@ -20,7 +20,6 @@ function EmailInput() {
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/listener/send_email/', formData);
-      console.log("formData.email :",formData.email)
       if (response.status === 200) {
         // 이메일을 세션에 저장
         sessionStorage.setItem('userEmail', formData.email);

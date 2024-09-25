@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import YouTube from 'react-youtube';
 import { useParams } from 'react-router-dom';
 import './MyTableStyles.css';
 import { useNavigate } from 'react-router-dom';
+
 
 function DetailVidDashboard({ videoId }) {
   const [videoData, setVideoData] = useState(null);
@@ -11,13 +12,11 @@ function DetailVidDashboard({ videoId }) {
   const [highlightInput, setHighlightInput] = useState('');
   let { id } = useParams();
   let { timestamp } = useParams();
-  console.log("videoData :", JSON.stringify(videoData, null, 2));
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log("id :",id);  // URL에서 추출한 vid_id를 콘솔에 출력
-    console.log("token :",token)
     const params = { l: 1, vid_id: id };
     axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
       params,
@@ -31,11 +30,12 @@ function DetailVidDashboard({ videoId }) {
   }, [videoId]);
 
   const navigateDashboard = () => {
-    navigate(`/`);
+    
+    // navigate('/', { state: { data, l, size, loc, loc_limit, word, field } });
+    navigate('/');
   };
 
   const handleTagDelSubmit = (tag_id) => {
-    console.log('Submitting tag:', tag_id);
     
     const token = localStorage.getItem('token');
     const params = { tag_id: tag_id, vid_id: id , l: 1};
@@ -69,7 +69,6 @@ function DetailVidDashboard({ videoId }) {
   };
 
   const handleTagSubmit = () => {
-    console.log('Submitting tag:', tagInput);
     
     const token = localStorage.getItem('token');
     const params = { name: tagInput, vid_id: id , l: 1};
