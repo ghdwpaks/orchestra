@@ -1,12 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from orchestra.models import Vid
+from orchestra.models import *
 from orchestra.serializers import *
 from rest_framework.authentication import TokenAuthentication  # Import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from orchestra.musicbooks.listener import Authentication
 from googletrans import Translator, LANGUAGES
+from orchestra.musicbooks.obsessive import *
 
 def translate_text(text):
     translator = Translator()
@@ -27,7 +28,7 @@ class ClefViewSet(viewsets.ModelViewSet):
     authentication_classes = [Authentication]  # Add TokenAuthentication
 
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], authentication_classes=[Authentication])
     def dashboard(self, request, *args, **kwargs):
         # The method content remains the same
         l = request.query_params.get('l')
@@ -39,10 +40,8 @@ class ClefViewSet(viewsets.ModelViewSet):
         return Response({'result': VidDetailSer(vid, context=context,many=True).data}, 200)
     
     
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], authentication_classes=[Authentication])
     def vid_detail(self, request, *args, **kwargs):
-        
-        
         user=self.request.user
 
         vid = Vid.objects.get(id=int(request.query_params.get('vid_id')))
@@ -79,8 +78,11 @@ class ClefViewSet(viewsets.ModelViewSet):
 
         print("request :",request)
         return Response({'result': result}, 200)
+        
+
+
     
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['POST'], authentication_classes=[Authentication])
     def add_tag(self, request, *args, **kwargs):
         
         user=self.request.user
@@ -134,3 +136,23 @@ class ClefViewSet(viewsets.ModelViewSet):
             "l":l
         }
         return Response({'result': TagDefSer(tag,context=context,many=False).data}, 200)
+    
+
+    @action(detail=False, methods=['POST'], authentication_classes=[Authentication])
+    def add_vid(self, request, *args, **kwargs):
+
+        user_input_url = request.data.get("url")
+        urls = extract_youtube_urls(user_input_url)
+        # Vid 모델의 url 필드에 이미 존재하는 URL들을 저장할 리스트
+        
+        urls, names = get_youtube_video_titles(urls)
+        
+        res = []
+        for i in range(len(urls)) :
+            res.append(
+                {
+                    "url":urls[i],
+                    "name":names[i],
+                }
+            )
+        return Response({'result': res}, 200)

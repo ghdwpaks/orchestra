@@ -2,10 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.utils.translation import gettext_lazy as _
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.hashers import make_password
-from .musicbooks.obsessive import is_hashed
 import os
 import binascii
 
@@ -58,7 +54,7 @@ class UserToken(models.Model):
 
 class Vid(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    name = models.CharField(max_length=20,blank=True)
+    name = models.CharField(max_length=127,blank=True)
     url = models.CharField(max_length=100,blank=True)
     
     def __str__(self):

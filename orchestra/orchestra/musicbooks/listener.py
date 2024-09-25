@@ -23,6 +23,8 @@ from botocore.exceptions import NoCredentialsError
 
 class Authentication(TokenAuthentication):
     def authenticate_credentials(self, key):
+        print("self :",self)
+        print("key :",key)
         token = None
         try:
             token = UserToken.objects.select_related("user").get(key=key)
@@ -56,10 +58,8 @@ class ListenerViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def login(self, request, *args, **kwargs):
-        print("entered")
         try:
             user = User.objects.get(uid=request.data.get("uid"))
-            print('user :',user)
             if user.check_password(request.data.get("password")):
                 return Response({'token': UserToken.objects.get_or_create(user=user)[0].key})
             else:
@@ -92,12 +92,8 @@ class ListenerViewSet(viewsets.ModelViewSet):
             html_content=f"""Your code is Here.
 <strong>{random_string}</strong>"""
         )
-        try:
-            sg = SendGridAPIClient('your_sendgrid_api_key')
-            response = sg.send(message)
-            print(response.status_code, response.body, response.headers)
-        except Exception as e:
-            print(e.message)
+        sg = SendGridAPIClient('your_sendgrid_api_key')
+        response = sg.send(message)
     
 
 
@@ -172,7 +168,6 @@ class ListenerViewSet(viewsets.ModelViewSet):
                 )
             passwordResetCode.useable = False
             passwordResetCode.save()
-            print("ghdwpaks")
             obj = get_input(
                     User,
                     request.data.items(),

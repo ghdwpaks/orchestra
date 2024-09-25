@@ -20,7 +20,7 @@ function DetailVidDashboard({ videoId }) {
     const params = { l: 1, vid_id: id };
     axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
       params,
-      headers: { Authorization: 'Token ' + token }
+      headers: { Authorization: token }
     })
     .then(response => setVideoData(response.data.result))
     .catch(error => console.error('Error fetching video details', error));
@@ -51,12 +51,13 @@ function DetailVidDashboard({ videoId }) {
   return (
     
   <div style={{ position: 'relative', width: '80%'}}>
-    {/* <YouTube videoId={videoData.vid.url.split('=')[1]} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
+    {/* <YouTube videoId={videoData.vid.url} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
     {/* <YouTube videoId={videoData.high.url} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
-    {/* <YouTube videoId={videoData.vid.url.split('=')[1]} containerClassName="youtube-container" style={{ width: '40%', height: 'auto' }} /> */}
+    {/* <YouTube videoId={videoData.vid.url} containerClassName="youtube-container" style={{ width: '40%', height: 'auto' }} /> */}
 
 
   <body>
+    
     <button onClick={navigateDashboard} >Dashboard</button>
       <table className="myTable">
           <caption><h2 style={{ color: 'gray', marginBottom: '20px', textAlign: 'center' }}>{videoData.vid.name}</h2></caption>
@@ -75,9 +76,9 @@ function DetailVidDashboard({ videoId }) {
                   </th>
                   <th>
                   <div class="video-container"> 
-                    <iframe class="video" src={`https://www.youtube.com/embed/${videoData.vid.url.split('=')[1]}`} frameborder="0" allowfullscreen/>
+                    <iframe class="video" src={`https://www.youtube.com/embed/${videoData.vid.url}`} frameborder="0" allowfullscreen/>
                   </div>
-                  {/* <YouTube videoId={videoData.vid.url.split('=')[1]} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
+                  {/* <YouTube videoId={videoData.vid.url} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
                   </th>
               </tr>
           </thead>
@@ -110,9 +111,9 @@ function DetailVidDashboard({ videoId }) {
                   <td></td>
                   <td>
                     <div class="video-container"> 
-                      <iframe class="video" src={`https://www.youtube.com/embed/${videoData.vid.url.split('=')[1]}?start=${item.timestamp}`} frameborder="0" allowfullscreen/>
+                      <iframe class="video" src={`https://www.youtube.com/embed/${videoData.vid.url}?start=${item.timestamp}`} frameborder="0" allowfullscreen/>
                     </div>
-                    {/* <YouTube videoId={videoData.vid.url.split('=')[1]} opts={{height: '400',width: '100%',playerVars: {rel: 0, start: 35}}} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
+                    {/* <YouTube videoId={videoData.vid.url} opts={{height: '400',width: '100%',playerVars: {rel: 0, start: 35}}} containerClassName="youtube-container" style={{ width: '100%', height: '400px' }} /> */}
                   </td>
                 </tr>
               ))}

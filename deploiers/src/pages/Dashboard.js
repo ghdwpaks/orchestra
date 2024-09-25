@@ -8,6 +8,7 @@ function Dashboard() {
   const [data, setData] = useState('Loading...');
   const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
+  const [hasToken, setHasToken] = useState(false); // 토큰 유무를 추적하는 상태 추가
 
   const handleLogin = () => {
     navigate('/login');
@@ -20,6 +21,10 @@ function Dashboard() {
   const handleUserPage = () => {
     navigate('/user');
   };
+  
+  const handleAddVid = () => {
+    navigate('/addvid');
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -27,11 +32,13 @@ function Dashboard() {
       var params = {
         l:0 
       };
+      console.log("token :",token)
       axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
           params: params,
-          headers: { Authorization: 'Token ' + token }
+          headers: { Authorization: token }
         })
         .then(response => {
+          setHasToken(true);
           if (response.data.result.length > 0) {
             setData(response.data.result);
           } else {
@@ -40,6 +47,7 @@ function Dashboard() {
         });
 
     } else {
+      setHasToken(false);
       setData('Please login or sign up.');
     }
   }, [csrfToken]);
@@ -53,7 +61,7 @@ function Dashboard() {
 
     axios.get('http://127.0.0.1:8000/magnifyer/vid_detail/', {
       params: params,
-      headers: { Authorization: 'Token ' + token }
+      headers: { Authorization: token }
     })
     .then(response => {
       console.log("Video details:", response.data);
@@ -74,6 +82,11 @@ function Dashboard() {
   return (
     <div>
       <h1>Dashboard</h1>
+      {/* /addvid로 이동하는 버튼 추가 */}
+      {hasToken && (
+        <button onClick={handleAddVid}>Add Video</button>
+      )}
+
       {data === 'Please login or sign up.' ? (
         <div>
           <button onClick={handleLogin}>Login</button>
@@ -92,7 +105,7 @@ function Dashboard() {
                   </td>
                   <td>
                     <div className="video-container">
-                      <YouTube videoId={item.url.split('=')[1]} containerClassName="youtube-container" />
+                      <YouTube videoId={item.url} containerClassName="youtube-container" />
                     </div>
                   </td>
                 </tr>

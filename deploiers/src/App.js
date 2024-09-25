@@ -8,6 +8,8 @@ import LogoutButton from './pages/Logout'; // 로그아웃 버튼 컴포넌트 �
 import EmailInput from './pages/EmailInput';
 import EmailCodeInput from './pages/EmailCodeInput';
 import ChangePassword from './pages/ChangePassword';
+import AddVid from './pages/AddVid';
+
 
 function AppContent() {
   const location = useLocation();  // 현재 URL 경로 확인
@@ -23,6 +25,7 @@ function AppContent() {
         <Route path="/emailinput" element={<EmailInput />} />
         <Route path="/emailcodeinput" element={<EmailCodeInput />} />
         <Route path="/changepassword" element={<ChangePassword />} />
+        <Route path="/addvid" element={<AddVid />} />
       </Routes>
     </div>
   );
