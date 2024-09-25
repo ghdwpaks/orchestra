@@ -35,8 +35,10 @@ class ClefViewSet(viewsets.ModelViewSet):
         context = {
             "l":l
         }
-        result = {}
-        vid = Vid.objects.all()
+        vid = Vid.objects.all()[:5]
+        print("len(vid) :",len(vid))
+        print("len(Vid.objects.all()) :",len(Vid.objects.all()))
+
         return Response({'result': VidDetailSer(vid, context=context,many=True).data}, 200)
     
     
@@ -47,13 +49,9 @@ class ClefViewSet(viewsets.ModelViewSet):
         vid = Vid.objects.get(id=int(request.query_params.get('vid_id')))
         #High.objects.create(vid=vid,timestamp=83)
 
-        h = High.objects.filter(vid_id=vid.id)
-        hds = HighDetailSer(h, context={'request': request}, many=True).data
         context={
-                "l":int(request.query_params.get('l'))
+                "l":int(request.query_params.get('l',1))
             },
-        
-
         result = {
             "vid" : VidDetailSer(
                     vid, 
@@ -62,8 +60,10 @@ class ClefViewSet(viewsets.ModelViewSet):
                 ).data,
             "tag" : TagDetailSer(
                     Tag.objects.filter(
-                            vid_id=vid.id
-                        ), 
+                        id__in=TagMapper.objects.filter(
+                                vid_id=vid.id
+                            ).values_list('tag_id', flat=True)
+                        ),
                     context=context,
                     many=True
                 ).data,
@@ -75,8 +75,6 @@ class ClefViewSet(viewsets.ModelViewSet):
                 ).data,
             }
         
-
-        print("request :",request)
         return Response({'result': result}, 200)
         
 

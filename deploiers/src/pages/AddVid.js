@@ -26,6 +26,17 @@ const YoutubeUrlForm = () => {
       alert('URL 전송 중 에러가 발생했습니다.');
     }
   };
+  const handleSyncChannelVideoList = (item) => {
+    const params = {update_channel_videos: item}
+    const token = localStorage.getItem('token');
+    axios.post('http://127.0.0.1:8000/vid/add_vid/', 
+      params,  // 이 부분은 데이터 본문으로 전달
+      {
+        headers: { Authorization: `Token ${token}` }
+      }
+    )
+    navigate('/')
+  };
 
   return (
     <div style={{ marginTop: '20px', marginLeft: '25px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -41,6 +52,19 @@ const YoutubeUrlForm = () => {
         </label>
         <button type="submit" style={{ width: '50%', height: '50px', padding: '10px', fontSize: '18px', cursor: 'pointer' }}>URL 전송</button>
       </form>
+
+      
+      <button 
+        onClick={() => handleSyncChannelVideoList(true)}
+        style={{
+          fontSize: '20px', // 글꼴 크기를 키워서 버튼 텍스트 확대
+          height: '60px', // 버튼의 높이를 직접 설정
+          marginTop: '120px'
+        }}>
+          채널 동영상 동기화
+      </button>
+
+
     </div>
   );
 };

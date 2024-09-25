@@ -23,8 +23,6 @@ from botocore.exceptions import NoCredentialsError
 
 class Authentication(TokenAuthentication):
     def authenticate_credentials(self, key):
-        print("self :",self)
-        print("key :",key)
         token = None
         try:
             token = UserToken.objects.select_related("user").get(key=key)

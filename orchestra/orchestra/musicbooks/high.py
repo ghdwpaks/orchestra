@@ -37,7 +37,14 @@ class HighViewSet(viewsets.ModelViewSet):
         
         return Response({'result': True}, 200)
     
-
+    @action(detail=False, methods=['POST'], authentication_classes=[Authentication])
+    def del_high(self, request, *args, **kwargs):
+        High.objects.filter(
+            id = request.data.get("high_id"),
+            vid_id = request.data.get("vid_id")
+        ).delete()
+        
+        return Response({'result': True}, 200)
     
     @action(detail=False, methods=['GET'], authentication_classes=[Authentication])
     def get_highs(self, request, *args, **kwargs):

@@ -78,9 +78,6 @@ class High(models.Model) :
 
 class Tag(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tags')
-    vid = models.ForeignKey(Vid, null=True, default=None, blank=True, on_delete=models.CASCADE, related_name='tags')
-    high = models.ForeignKey(High, null=True, default=None, blank=True, on_delete=models.CASCADE, related_name='tags')
     
     def __str__(self):
         return f"{self.id}"
@@ -102,6 +99,16 @@ class TagName(models.Model) :
     class Meta:
         verbose_name = "tagName"
         verbose_name_plural = "tagName"
+
+class TagMapper(models.Model) :
+    tag = models.ForeignKey(Tag, null=True, on_delete=models.SET_NULL, related_name='tagMapper')
+    vid = models.ForeignKey(Vid, null=True, default=None, blank=True, on_delete=models.SET_NULL, related_name='tagMappers')
+    high = models.ForeignKey(High, null=True, default=None, blank=True, on_delete=models.SET_NULL, related_name='tagMappers')
+    
+    class Meta:
+        verbose_name = "tagMapper"
+        verbose_name_plural = "tagMapper"
+
     
 class Memo(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')

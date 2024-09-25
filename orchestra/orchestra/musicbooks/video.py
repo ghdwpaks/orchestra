@@ -16,21 +16,19 @@ class VidViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'], authentication_classes=[Authentication])
     def add_vid(self, request, *args, **kwargs):
+        update_channel_videos = request.data.get("update_channel_videos")
+        print("update_channel_videos :",update_channel_videos)
 
-        user_input_url = request.data.get("url")
-        urls = extract_youtube_urls(user_input_url)
-        # Vid 모델의 url 필드에 이미 존재하는 URL들을 저장할 리스트
-        
-        urls, names = get_youtube_video_titles(urls)
-        
-        res = []
-        for i in range(len(urls)) :
-            res.append(
-                {
-                    "url":urls[i],
-                    "name":names[i],
-                }
-            )
-        return Response({'result': res}, 200)
+        if request.data.get("update_channel_videos") :
+            ids = get_all_video_ids_from_channel()
+            get_youtube_video_titles(None,ids)
+        else : 
+            user_input_url = request.data.get("url")
+            urls = extract_youtube_urls(user_input_url)
+            # Vid 모델의 url 필드에 이미 존재하는 URL들을 저장할 리스트
+            
+            get_youtube_video_titles(urls,None)
+            
+        return Response({'result': True}, 200)
     
     

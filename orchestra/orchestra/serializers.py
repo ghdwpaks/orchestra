@@ -17,17 +17,27 @@ class UserDetailSer(serializers.ModelSerializer) :
 #
 
 class VidDefSer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='api:user-list', source='username',
-                                                lookup_url_kwarg='username', lookup_field='username')
 
     class Meta:
         model = Vid
         fields = ('id', 'name', 'url')
 
 class VidDetailSer(serializers.ModelSerializer):
+    tag = serializers.SerializerMethodField()
+    def get_tag(self, obj):
+        return TagDefSer(
+                Tag.objects.filter(
+                    id__in=TagMapper.objects.filter(
+                            vid_id=obj.id
+                        ).values_list('tag_id', flat=True)
+                    ),
+                context=self.context,
+                many=True
+            ).data
+
     class Meta:
         model = Vid
-        fields = ('id', 'name', 'url')
+        fields = ('id', 'name', 'url', 'tag')
 
 #
 
@@ -44,7 +54,13 @@ class HighDetailSer(serializers.ModelSerializer):
 #
 class TagFunc():
     def get_name(obj, context):
-        l = context[0].get("l", 1)
+        print("context :",context)
+        print("type(context) :",type(context))
+        l = None
+        try :
+            l = context[0].get("l", 1)
+        except :
+            l = context.get("l", 1)
         tagNames = TagName.objects.filter(
             Q(tag_id=obj.id) & Q(lang=l)
         )

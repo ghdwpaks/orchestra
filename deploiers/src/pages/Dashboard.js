@@ -40,6 +40,7 @@ function Dashboard() {
         .then(response => {
           setHasToken(true);
           if (response.data.result.length > 0) {
+            console.log("data :",data)
             setData(response.data.result);
           } else {
             setData('No data available');
@@ -81,40 +82,69 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      {/* /addvid로 이동하는 버튼 추가 */}
-      {hasToken && (
-        <button onClick={handleAddVid}>Add Video</button>
-      )}
+    <h1>Dashboard</h1>
+    {/* /addvid로 이동하는 버튼 추가 */}
+    {hasToken && (
+      <button onClick={handleAddVid}>Add Video</button>
+    )}
 
-      {data === 'Please login or sign up.' ? (
-        <div>
-          <button onClick={handleLogin}>Login</button>
-          <button onClick={handleSignUp}>Sign Up</button>
-        </div>
-      ) : typeof data === 'string' ? (
-        <p>{data}</p>
-      ) : (
-        <div>
-          <table className="custom-table">
-            <tbody>
-              {data.map((item, index) => (
-                <tr key={item.id || index}>
-                  <td>
-                    <button onClick={() => handleNavigation(item)}>{item.name}</button>
-                  </td>
-                  <td>
-                    <div className="video-container">
-                      <YouTube videoId={item.url} containerClassName="youtube-container" />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+    {data === 'Please login or sign up.' ? (
+      <div>
+        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleSignUp}>Sign Up</button>
+      </div>
+    ) : typeof data === 'string' ? (
+      <p>{data}</p>
+    ) : (
+      <div style={{ position: 'relative', width: '90%', marginLeft: '10px' }}>
+        <table className="myTable" style={{ marginLeft: '10px' }}>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={item.id || index}>
+                <td style={{ width: '20%', padding: '10px' }}>
+                  <button 
+                    onClick={() => handleNavigation(item)}
+                    style={{
+                      fontSize: '20px', // 글꼴 크기를 키워서 버튼 텍스트 확대
+                      width: '100%', // 버튼의 너비를 전체 셀 너비로 설정
+                      height: '60%', // 버튼의 높이를 직접 설정
+                    }}>
+                      {item.name.length > 15 ? `${item.name.slice(0, 15)}...` : item.name}
+                  </button>
+                </td>
+                <td style={{ width: '15%', padding: '10px' }}>
+                  {item.tag && item.tag.length > 0 ? (
+                    <p>
+                      {item.tag.map((tagItem, tagIndex) => (
+                        <p key={tagIndex} className="gray-background">{tagItem.name}</p>
+                      ))}
+                    </p>
+                  ) : (
+                    <p/>
+                  )}
+                </td>
+                <td style={{ width: '65%', padding: '10px' }}>
+                  <div className="video-container">
+
+                    
+                    <iframe
+                      class="video"
+                      src={`https://www.youtube.com/embed/${item.url}`}
+                      frameborder="0"
+                      allowfullscreen
+                    />
+
+                    {/* <YouTube videoId={item.url} containerClassName="youtube-container" style={{ width: '100%', height: 'auto' }} /> */}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+
   );
 }
 

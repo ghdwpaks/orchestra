@@ -16,6 +16,8 @@ from django.conf import settings
 from urllib.parse import urlparse, parse_qs
 from orchestra.models import Vid
 
+API_KEY = os.getenv('GOOGLE_ACCESS_KEY_ID')
+
 def clean_html(input_text):
     # HTML 태그 제거
     clean_text = re.sub(r'<[^>]*>', '', input_text)
@@ -140,37 +142,37 @@ def get_youtube_thumbnail(video_id):
 
 
 
-def get_youtube_video_titles(url_list):
+def get_youtube_video_titles(url_list,video_ids):
     # URL에서 비디오 ID를 추출하고 유효한 ID만 리스트로 만듦
-    video_ids = []
-    for url in url_list :
-        video_id = extract_video_id(url)
-        if not Vid.objects.filter(url=video_id).exists() :
-            video_ids.append(video_id)
+    if not video_ids :
+        video_ids = []
+        for url in url_list :
+            video_id = extract_video_id(url)
+            if not Vid.objects.filter(url=video_id).exists() :
+                video_ids.append(video_id)
 
-    # 비디오 ID들을 쉼표로 구분된 문자열로 변환
-    video_ids_str = ','.join(video_ids)
 
-    youtube_api_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_ids_str}&key={os.getenv('GOOGLE_ACCESS_KEY_ID')}"
-    response = requests.get(youtube_api_url)
-    video_data = response.json()
-    
-    channel_id = os.getenv('YOUTUBE_CHANNEL_ID')
 
-    video_titles = []
-    video_ids = []
+    for i in range(0, len(video_ids), 50):
+        # 50개의 동영상 ID로 분할하여 요청
+        video_ids_chunk = video_ids[i:i + 50]
+        video_ids_str = ','.join(video_ids_chunk)
+        
+        # API 요청 URL
+        youtube_api_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_ids_str}&key={API_KEY}"
+        
+        # API 요청 보내기
+        response = requests.get(youtube_api_url)
+        video_data = response.json()
 
-    for item in video_data.get('items', []):
-        if item['snippet']['channelId'] == channel_id:
-            Vid.objects.create(
-                name = item['snippet']['title'],
-                url = item['id']
-            )
-
-            video_titles.append(item['snippet']['title'])
-            video_ids.append(item['id'])
-
-    return video_ids, video_titles
+        # 동영상 정보를 저장하는 로직
+        for item in video_data.get('items', []):
+            if item['snippet']['channelId'] == os.getenv('YOUTUBE_CHANNEL_ID'):
+                print("item['id'] :",item['id'])
+                Vid.objects.create(
+                    name=item['snippet']['title'],
+                    url=item['id']
+                )
 
 
 
@@ -286,4 +288,61 @@ def convertTimeToSeconds(timeStr):
             totalSeconds += value
     
     return totalSeconds
+
+
+
+
+
+
+
+
+
+
+
+
+
+import requests
+import os
+
+# YouTube Data API v3 key 설정 (Google Cloud Console에서 생성된 API 키)
+
+
+# 채널의 모든 동영상 ID를 가져오는 함수
+def get_all_video_ids_from_channel():
+    uploads_playlist_id = get_uploads_playlist_id(os.getenv('YOUTUBE_CHANNEL_ID'))
+    video_ids = get_video_ids_from_playlist(uploads_playlist_id)
+    
+    return video_ids
+
+
+# 채널 ID로 업로드된 동영상 재생목록 ID 가져오기
+def get_uploads_playlist_id(channel_id):
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id={channel_id}&key={API_KEY}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if data['items']:
+            # 채널의 업로드된 동영상 재생목록 ID
+            return data['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+    return None
+
+# 재생목록에서 모든 동영상 ID 가져오기
+def get_video_ids_from_playlist(playlist_id):
+    video_ids = []
+    base_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId={playlist_id}&maxResults=50&key={API_KEY}"
+    
+    next_page_token = None
+    
+    while True:
+        url = base_url + (f"&pageToken={next_page_token}" if next_page_token else "")
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            video_ids.extend(item['contentDetails']['videoId'] for item in data['items'])
+            next_page_token = data.get('nextPageToken')
+            if not next_page_token:
+                break
+        else:
+            break
+    return video_ids
 
