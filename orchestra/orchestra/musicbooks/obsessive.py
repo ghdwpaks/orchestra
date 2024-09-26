@@ -142,14 +142,26 @@ def get_youtube_thumbnail(video_id):
 
 
 
-def get_youtube_video_titles(url_list,video_ids):
+def get_youtube_video_titles(url_list,input_video_ids):
+
+    if url_list : print("url_list : true")
+    if input_video_ids : print("input_video_ids : true")
+
+
     # URL에서 비디오 ID를 추출하고 유효한 ID만 리스트로 만듦
-    if not video_ids :
-        video_ids = []
-        for url in url_list :
-            video_id = extract_video_id(url)
-            if not Vid.objects.filter(url=video_id).exists() :
-                video_ids.append(video_id)
+    video_ids = []
+    target_list = []
+    if url_list : 
+        for obj in url_list :
+            target_list.append(extract_video_id(obj))
+    if input_video_ids : 
+        target_list = input_video_ids
+
+    len(video_ids)
+    for video_id in target_list :
+        print("video_id :",video_id)
+        if not Vid.objects.filter(url=video_id).exists() :
+            video_ids.append(video_id)
 
 
 
@@ -179,7 +191,6 @@ def extract_video_id(youtube_url):
     # URL 파싱
     parsed_url = urlparse(youtube_url)
 
-    
     # 1. youtube.com/watch?v= 형태 처리
     if parsed_url.hostname in ['www.youtube.com', 'youtube.com']:
         query_params = parse_qs(parsed_url.query)
@@ -189,8 +200,8 @@ def extract_video_id(youtube_url):
     elif parsed_url.hostname == 'youtu.be':
         return parsed_url.path[1:]
     
-    # URL이 비디오 ID를 포함하지 않는 경우
-    return None
+    # 순수 ID 만 들어온 경우
+    return youtube_url
 
 
 

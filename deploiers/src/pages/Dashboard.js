@@ -190,7 +190,7 @@ function Dashboard() {
 
               <select
                 value={field}
-                onClick={handleField}
+                onChange={handleField}
                 style={{ padding: '10px', marginRight: '10px' }}
               >
                 <option value="tag">태그</option>
@@ -247,6 +247,7 @@ function Dashboard() {
               {data.map((item, index) => (
                 <tr key={item.id || index}>
                   <td style={{ width: '20%', padding: '10px' }}>
+                    {/*
                     <button 
                       onClick={() => handleNavigation(item)}
                       style={{
@@ -256,8 +257,20 @@ function Dashboard() {
                       }}>
                       {item.name.length > 15 ? `${item.name.slice(0, 15)}...` : item.name}
                     </button>
+                    */}
+                    <a 
+                    onClick={() => handleNavigation(item)} 
+                    target="_blank" 
+                    class="button-link"
+                    style={{
+                      fontSize: '20px', 
+                      width: '100%', 
+                      height: '60%', 
+                    }}>
+                      {item.name.length > 15 ? `${item.name.slice(0, 15)}...` : item.name}
+                    </a>
                   </td>
-                  <td style={{ width: '15%', padding: '10px' }}>
+                  <td style={{ width: '20%', padding: '10px' }}>
                     {item.tag && item.tag.length > 0 ? (
                       <p>
                         {item.tag.map((tagItem, tagIndex) => (
@@ -268,7 +281,7 @@ function Dashboard() {
                       <p/>
                     )}
                   </td>
-                  <td style={{ width: '65%', padding: '10px' }}>
+                  <td style={{ width: '55%', padding: '10px' }}>
                     <div className="video-container">
                       <iframe
                         className="video"
