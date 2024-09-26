@@ -159,7 +159,6 @@ def get_youtube_video_titles(url_list,input_video_ids):
 
     len(video_ids)
     for video_id in target_list :
-        print("video_id :",video_id)
         if not Vid.objects.filter(url=video_id).exists() :
             video_ids.append(video_id)
 
@@ -182,8 +181,37 @@ def get_youtube_video_titles(url_list,input_video_ids):
             if item['snippet']['channelId'] == os.getenv('YOUTUBE_CHANNEL_ID'):
                 Vid.objects.create(
                     name=item['snippet']['title'],
-                    url=item['id']
+                    url=item['id'],
+                    upload_time=datetime.strptime(item['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
                 )
+
+
+
+    none_upload_time_vids = Vid.objects.filter(upload_time=None)
+    none_upload_time_vids_ids = none_upload_time_vids.values_list("url",flat=True)
+    print("none_upload_time_vids :",none_upload_time_vids)
+    print("len(none_upload_time_vids) :",len(none_upload_time_vids))
+    for i in range(0, len(none_upload_time_vids_ids), 50):
+        # 50개의 동영상 ID로 분할하여 요청
+        video_ids_chunk = none_upload_time_vids_ids[i:i + 50]
+        print("video_ids_chunk :",video_ids_chunk)
+        print("type(video_ids_chunk) :",type(video_ids_chunk))
+        video_ids_str = ','.join(video_ids_chunk)
+        # API 요청 URL
+        youtube_api_url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_ids_str}&key={API_KEY}"
+        
+        # API 요청 보내기
+        response = requests.get(youtube_api_url)
+        video_data = response.json()
+        
+        for item in video_data.get('items', []):
+            print("ghdwpaks",datetime.strptime(item['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ"))
+            none_upload_time_vids.filter(
+                url=item['id'],
+            ).update(
+                upload_time=datetime.strptime(item['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
+            )
+
 
 
 

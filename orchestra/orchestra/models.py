@@ -56,6 +56,7 @@ class Vid(models.Model) :
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     name = models.CharField(max_length=127,blank=True)
     url = models.CharField(max_length=100,blank=True)
+    upload_time = models.DateTimeField(blank=True,null=True)
     
     def __str__(self):
         return f"{self.id}"

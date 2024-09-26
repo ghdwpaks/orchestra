@@ -36,7 +36,8 @@ class ClefViewSet(viewsets.ModelViewSet):
         size = request.query_params.get('size')
         loc = request.query_params.get('loc')
         word = request.query_params.get('word')
-        field = request.query_params.get('field') #tagname, 
+        field = request.query_params.get('field')
+        sort = request.query_params.get('sort')
         '''
         search_field
         tagname : 태그이름 부분포함검색
@@ -48,6 +49,7 @@ class ClefViewSet(viewsets.ModelViewSet):
         print("loc :",loc)
         print("word :",word)
         print("field :",field)
+        print("sort :",sort)
 
         if not word : word = ""
         if not field : field = ""
@@ -87,8 +89,22 @@ class ClefViewSet(viewsets.ModelViewSet):
                                 flat=True
                             )
                     )
+                
+        #upd 업로드 최신순
+        #upa 업로드 오래된순
+        #idd id 최신순
+        #ida id 오래된순
+        
+        vid = Vid.objects.filter(q)
 
-        vid = Paginator(Vid.objects.filter(q), size)
+        if sort == "upa" : vid = vid.order_by("upload_time")
+        elif sort == "idd" : vid = vid.order_by("-id")
+        elif sort == "ida" : vid = vid.order_by("id")
+        else : vid = vid.order_by("-upload_time")
+
+
+
+        vid = Paginator(vid, size)
         num_pages = vid.num_pages
         if loc > num_pages:
             loc = num_pages  # 페이지 번호를 최대 페이지로 조정

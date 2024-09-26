@@ -20,6 +20,7 @@ function Dashboard() {
   const size = useRef(savedState?.size || 10);
   const loc = useRef(savedState?.loc || 1);
   const loc_limit = useRef(savedState?.loc_limit || 1);
+  const sort = useRef(savedState?.sort || "upd");
 
 
   const handleLogin = () => {
@@ -58,11 +59,12 @@ function Dashboard() {
   const handleField = (e) => {
     setField(e.target.value)
   };
+  
 
   const handleLoc = (e) => {
     loc.current = e.target.value;
     
-    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field,sort:sort.current};
     axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
       params,  // params를 객체로 전달
       headers: { Authorization: `Token ${token}` }
@@ -89,7 +91,7 @@ function Dashboard() {
       size.current = req_data.size;
       loc.current = req_data.loc;
       loc_limit.current = req_data.loc_limit;
-      console.log("loc_limit :",loc_limit)
+      sort.current = req_data.sort;
       localStorage.setItem('dashboardState', JSON.stringify({ 
         data,
         word,
@@ -98,6 +100,7 @@ function Dashboard() {
         size:size.current,
         loc:loc.current,
         loc_limit:loc_limit.current,
+        sort:sort.current,
       }));
     } else {
       setData('No data available');
@@ -122,7 +125,8 @@ function Dashboard() {
         loc:savedState?.loc || 1,
         loc_limit:savedState?.loc_limit || 1,
         word:savedState?.word || '',
-        field:savedState?.field || 'tag'
+        field:savedState?.field || 'tag',
+        sort:savedState?.sort || "upd"
       };
       axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
           params: params,
@@ -145,7 +149,7 @@ function Dashboard() {
   }, [isNavigating, l, size, loc, token]);
 
   const handleSearch = () => {
-    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field,sort:sort.current};
     axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
       params,  // params를 객체로 전달
       headers: { Authorization: `Token ${token}` }
@@ -160,7 +164,23 @@ function Dashboard() {
     console.log("e.target.value :", e.target.value);
     size.current = e.target.value;
     
-    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field};
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field,sort:sort.current};
+    axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
+      params,  // params를 객체로 전달
+      headers: { Authorization: `Token ${token}` }
+    })
+    .then(response => {
+      console.log("handleSearch entered");
+      handlePageData(response.data);
+    });
+  };
+
+  const handleSortChange = (e) => {
+    console.log("entered");
+    console.log("e.target.value :", e.target.value);
+    sort.current = e.target.value;
+    
+    const params = {l:l.current,size:size.current,loc:loc.current,word:word,field:field,sort:sort.current};
     axios.get('http://127.0.0.1:8000/magnifyer/dashboard/', {
       params,  // params를 객체로 전달
       headers: { Authorization: `Token ${token}` }
@@ -206,6 +226,18 @@ function Dashboard() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center' }}>
+              
+              <select
+                value={sort.current}
+                onChange={handleSortChange}
+                style={{ padding: '10px', marginRight: '10px' }}
+              >
+                <option value="upd">업로드 최신순</option>
+                <option value="upa">업로드 오래된순</option>
+                <option value="idd">id 최신순</option>
+                <option value="ida">id 오래된순</option>
+              </select>
+
               <select
                 value={size.current}
                 onChange={handleSizeChange}
