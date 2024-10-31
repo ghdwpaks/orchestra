@@ -1,0 +1,3 @@
+packages:
+  yum:
+    mariadb-devel: []  # Amazon Linux 2에서 MySQL 개발 라이브러리를 제공합니다.
